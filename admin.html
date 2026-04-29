@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Admin - Loja</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background: #0f172a; color: #e2e8f0; padding: 20px; }
+  .container { max-width: 900px; margin: 0 auto; }
+  .card { background: #1e293b; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+    h1 { margin-bottom: 20px; color: #3b82f6; }
+    h2 { margin-bottom: 16px; font-size: 20px; }
+    input { width: 100%; padding: 12px; margin: 8px 0; background: #334155; border: 1px solid #475569; border-radius: 8px; color: white; font-size: 16px; }
+    input::placeholder { color: #94a3b8; }
+    button { padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin-top: 8px; }
+    button:hover { background: #2563eb; }
+  .btn-delete { background: #ef4444; padding: 8px 12px; font-size: 14px; }
+  .btn-delete:hover { background: #dc2626; }
+  .btn-edit { background: #f59e0b; padding: 8px 12px; font-size: 14px; margin-right: 8px; }
+  .btn-edit:hover { background: #d97706; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { text-align: left; padding: 12px; border-bottom: 1px solid #334155; }
+    th { color: #94a3b8; }
+  .login-box { max-width: 400px; margin: 100px auto; }
+  .erro { background: #7f1d1d; color: #fecaca; padding: 12px; border-radius: 8px; margin: 12px 0; }
+  .sucesso { background: #14532d; color: #bbf7d0; padding: 12px; border-radius: 8px; margin: 12px 0; }
+    img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; }
+    input[type="file"] { padding: 8px; background: #1e293b; }
+  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
+  .modal-content { max-width: 500px; width: 90%; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="login" class="card login-box">
+      <h1>🔐 Painel Admin</h1>
+      <input type="password" id="senha" placeholder="Digite a senha" onkeypress="if(event.key==='Enter') fazerLogin()">
+      <button onclick="fazerLogin()" style="width: 100%;">Entrar</button>
+      <div id="erro-login"></div>
+    </div>
+
+    <div id="painel" style="display: none;">
+      <h1>🔐 Painel Admin - Loja Dev do Zero</h1>
+
+      <div class="card">
+        <h2>Cadastrar Novo Produto</h2>
+        <div id="msg"></div>
+        <form id="form-produto" enctype="multipart/form-data">
+          <input type="text" id="nome" name="nome" placeholder="Nome do produto" required>
+          <input type="number" id="preco" name="preco" placeholder="Preço ex: 99.90" step="0.01" required>
+          <input type="file" id="imagem" name="imagem" accept="image/*">
+          <button type="submit">Cadastrar Produto</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Produtos Cadastrados</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Img</th>
+              <th>Nome</th>
+              <th>Preço</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-produtos"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE EDITAR -->
+  <div id="modal-editar" class="modal">
+    <div class="card modal-content">
+      <h2>Editar Produto</h2>
+      <form id="form-editar" enctype="multipart/form-data">
+        <input type="hidden" id="edit-id">
+        <p style="margin: 8px 0; color: #94a3b8;">Imagem atual:</p>
+        <img id="edit-img-atual" src="" style="width: 100px; height: 100px; margin-bottom: 12px;">
+        <input type="text" id="edit-nome" name="nome" placeholder="Nome do produto" required>
+        <input type="number" id="edit-preco" name="preco" placeholder="Preço" step="0.01" required>
+        <p style="margin: 8px 0; color: #94a3b8;">Trocar imagem - opcional:</p>
+        <input type="file" id="edit-imagem" name="imagem" accept="image/*">
+        <div style="display: flex; gap: 12px; margin-top: 12px;">
+          <button type="submit" style="flex: 1;">Salvar Alterações</button>
+          <button type="button" onclick="fecharModalEditar()" style="flex: 1; background: #475569;">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let senhaAdmin = '';
+    let produtoEditandoId = null;
+
+    function fazerLogin() {
+      const senha = document.getElementById('senha').value;
+      fetch('/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ senha })
+      })
+    .then(res => res.json())
+    .then(data => {
+        if (data.sucesso) {
+          senhaAdmin = senha;
+          document.getElementById('login').style.display = 'none';
+          document.getElementById('painel').style.display = 'block';
+          carregarProdutos();
+        } else {
+          document.getElementById('erro-login').innerHTML = '<div class="erro">Senha incorreta</div>';
+        }
+      });
+    }
+
+    function carregarProdutos() {
+      fetch('/admin/produtos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ senha: senhaAdmin })
+      })
+    .then(res => res.json())
+    .then(produtos => {
+        const tbody = document.getElementById('tabela-produtos');
+        tbody.innerHTML = produtos.map(p => `
+          <tr>
+            <td><img src="${p.img}" alt="${p.nome}"></td>
+            <td>${p.nome}</td>
+            <td>R$ ${p.preco.toFixed(2).replace('.', ',')}</td>
+            <td>
+              <button class="btn-edit" onclick="abrirModalEditar(${p.id}, '${p.nome.replace(/'/g, "\\'")}', ${p.preco}, '${p.img}')">Editar</button>
+              <button class="btn-delete" onclick="deletarProduto(${p.id})">Deletar</button>
+            </td>
+          </tr>
+        `).join('');
+      });
+    }
+
+    document.getElementById('form-produto').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('senha', senhaAdmin);
+      formData.append('nome', document.getElementById('nome').value);
+      formData.append('preco', document.getElementById('preco').value);
+      const imagem = document.getElementById('imagem').files[0];
+      if (imagem) formData.append('imagem', imagem);
+
+      fetch('/admin/add', {
+        method: 'POST',
+        body: formData
+      })
+    .then(res => res.json())
+    .then(data => {
+        if (data.sucesso) {
+          document.getElementById('msg').innerHTML = '<div class="sucesso">Produto cadastrado!</div>';
+          document.getElementById('form-produto').reset();
+          carregarProdutos();
+          setTimeout(() => document.getElementById('msg').innerHTML = '', 3000);
+        }
+      });
+    });
+
+    function deletarProduto(id) {
+      if (!confirm('Tem certeza que quer deletar?')) return;
+      fetch('/admin/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ senha: senhaAdmin, id })
+      })
+    .then(res => res.json())
+    .then(data => {
+        if (data.sucesso) carregarProdutos();
+      });
+    }
+
+    // FUNÇÕES DO EDITAR
+    function abrirModalEditar(id, nome, preco, img) {
+      produtoEditandoId = id;
+      document.getElementById('edit-id').value = id;
+      document.getElementById('edit-nome').value = nome;
+      document.getElementById('edit-preco').value = preco;
+      document.getElementById('edit-img-atual').src = img;
+      document.getElementById('modal-editar').style.display = 'flex';
+    }
+
+    function fecharModalEditar() {
+      document.getElementById('modal-editar').style.display = 'none';
+      document.getElementById('form-editar').reset();
+    }
+
+    document.getElementById('form-editar').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('senha', senhaAdmin);
+      formData.append('id', produtoEditandoId);
+      formData.append('nome', document.getElementById('edit-nome').value);
+      formData.append('preco', document.getElementById('edit-preco').value);
+      const imagem = document.getElementById('edit-imagem').files[0];
+      if (imagem) formData.append('imagem', imagem);
+
+      fetch('/admin/edit', {
+        method: 'POST',
+        body: formData
+      })
+    .then(res => res.json())
+    .then(data => {
+        if (data.sucesso) {
+          fecharModalEditar();
+          carregarProdutos();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

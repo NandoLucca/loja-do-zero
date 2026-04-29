@@ -10,12 +10,12 @@ const produtos = [
     { id: 4, nome: "Moletom Canguru", preco: "99.90", img: "https://placehold.co/600x400/000000/FFFFFF?text=Moletom" }
 ];
 
-// Middlewares
+// MIDDLEWARE TEM QUE VIR ANTES DAS ROTAS - ESSENCIAL
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Rotas
+// Rotas GET
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -28,12 +28,22 @@ app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+// Rota POST do login - versão à prova de bala
 app.post('/admin/login', (req, res) => {
-    const { senha } = req.body;
-    if (senha === '1234') {
-        res.json({ success: true });
-    } else {
-        res.status(401).json({ success: false, message: 'Senha incorreta' });
+    try {
+        const senha = req.body.senha;
+        
+        if (!senha) {
+            return res.status(400).json({ success: false, message: 'Senha não enviada' });
+        }
+        
+        if (senha === '1234') {
+            return res.json({ success: true });
+        } else {
+            return res.status(401).json({ success: false, message: 'Senha incorreta' });
+        }
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Erro no servidor' });
     }
 });
 

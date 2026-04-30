@@ -3,172 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loja Dev do Zero</title>
+    <title>⚡ TechProEletro - Comparou, comprou mais barato</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-        }
-        header {
-            background-color: #1a1a2e;
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logo h1 {
-            font-size: 24px;
-        }
-        .logo p {
-            font-size: 14px;
-            color: #ccc;
-        }
-        .carrinho-btn {
-            background-color: #4a69bd;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            position: relative;
-            font-size: 16px;
-        }
-        .carrinho-contador {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background-color: #e74c3c;
-            color: white;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        main {
-            padding: 40px 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        #produtos-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 30px;
-        }
-        .produto {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            overflow: hidden;
-            transition: transform 0.2s;
-        }
-        .produto:hover {
-            transform: translateY(-5px);
-        }
-        .produto img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-        .produto-info {
-            padding: 15px;
-        }
-        .produto h3 {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-        .produto p {
-            font-size: 20px;
-            color: #4a69bd;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-        .produto button {
-            width: 100%;
-            padding: 10px;
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: not-allowed;
-            font-size: 16px;
-        }
-        .loading {
-            text-align: center;
-            font-size: 18px;
-            color: #666;
-            padding: 50px;
-        }
-        @media (max-width: 600px) {
-            header {
-                flex-direction: column;
-                gap: 15px;
-            }
-            #produtos-container {
-                grid-template-columns: 1fr;
-            }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; }
+        header { background: #232f3e; color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .logo h1 { font-size: 28px; margin-bottom: 5px; }
+        .logo p { font-size: 14px; color: #ffa41c; }
+        .menu { display: flex; gap: 25px; }
+        .menu a { color: white; text-decoration: none; font-weight: 500; }
+        .menu a:hover { color: #ffa41c; }
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .titulo-secao { font-size: 32px; margin-bottom: 30px; text-align: center; color: #232f3e; }
+        .grid-produtos { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
+        .card-produto { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        .card-produto:hover { transform: translateY(-5px); }
+        .card-produto img { width: 100%; height: 250px; object-fit: contain; margin-bottom: 15px; }
+        .card-produto h3 { font-size: 18px; margin-bottom: 10px; color: #232f3e; min-height: 50px; }
+        .preco { font-size: 24px; font-weight: bold; color: #B12704; margin: 15px 0; }
+        .btn-comprar { display: block; width: 100%; padding: 12px; background: #FFD814; color: #0F1111; text-align: center; text-decoration: none; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; }
+        .btn-comprar:hover { background: #F7CA00; }
+        .btn-comprar.desabilitado { background: #ccc; cursor: not-allowed; }
+        footer { background: #232f3e; color: white; text-align: center; padding: 30px; margin-top: 60px; }
+        @media (max-width: 768px) {
+            header { flex-direction: column; text-align: center; gap: 15px; }
         }
     </style>
 </head>
 <body>
     <header>
         <div class="logo">
-            <h1>🛒 Loja Dev do Zero</h1>
-            <p>Sua primeira loja com Node.js</p>
+            <h1>⚡ TechProEletro</h1>
+            <p>Comparou, comprou mais barato. Ofertas atualizadas 24h</p>
         </div>
-        <button class="carrinho-btn">
-            Carrinho
-            <span class="carrinho-contador">0</span>
-        </button>
+        <nav class="menu">
+            <a href="#ofertas">Ofertas</a>
+            <a href="#smartphones">Smartphones</a>
+            <a href="#casa">Casa Inteligente</a>
+            <a href="#acessorios">Acessórios</a>
+        </nav>
     </header>
 
-    <main>
-        <div id="produtos-container">
-            <div class="loading">Carregando produtos...</div>
-        </div>
-    </main>
+    <div class="container">
+        <h2 class="titulo-secao" id="ofertas">Ofertas em Destaque</h2>
+        <div class="grid-produtos" id="grid-produtos"></div>
+    </div>
+
+    <footer>
+        <p>⚡ TechProEletro © 2026 - Comparou, comprou mais barato</p>
+        <p style="font-size: 12px; margin-top: 10px; opacity: 0.7;">
+            Como associado da Amazon, ganhamos com compras qualificadas.
+        </p>
+    </footer>
 
     <script>
         async function carregarProdutos() {
             try {
                 const resposta = await fetch('/api/produtos');
                 const produtos = await resposta.json();
+                const grid = document.getElementById('grid-produtos');
                 
-                const container = document.getElementById('produtos-container');
-                container.innerHTML = '';
-
-                if (produtos.length === 0) {
-                    container.innerHTML = '<div class="loading">Nenhum produto cadastrado ainda.</div>';
-                    return;
-                }
-
-                produtos.forEach(produto => {
-                    container.innerHTML += `
-                        <div class="produto">
-                            <img src="${produto.img}" alt="${produto.nome}">
-                            <div class="produto-info">
-                                <h3>${produto.nome}</h3>
-                                <p>R$ ${produto.preco}</p>
-                                <button>Comprar - Em breve</button>
-                            </div>
-                        </div>
-                    `;
+                produtos.forEach(function(produto) {
+                    const card = document.createElement('div');
+                    card.className = 'card-produto';
+                    
+                    const temLinkValido = produto.linkAfiliado && produto.linkAfiliado.indexOf('SEU-LINK') === -1;
+                    
+                    let botaoHTML = '';
+                    if (temLinkValido) {
+                        botaoHTML = '<a href="' + produto.linkAfiliado + '" target="_blank" class="btn-comprar">Comprar na Amazon</a>';
+                    } else {
+                        botaoHTML = '<button class="btn-comprar desabilitado">Comprar - Em breve</button>';
+                    }
+                    
+                    const precoFormatado = 'R$ ' + produto.preco.toFixed(2).replace('.', ',');
+                    
+                    card.innerHTML = '<img src="' + produto.imagem + '" alt="' + produto.nome + '"><h3>' + produto.nome + '</h3><div class="preco">' + precoFormatado + '</div>' + botaoHTML;
+                    
+                    grid.appendChild(card);
                 });
-            } catch (error) {
-                console.error('Erro ao carregar produtos:', error);
-                document.getElementById('produtos-container').innerHTML = 
-                    '<div class="loading">Erro ao carregar produtos. Tenta atualizar a página.</div>';
+                
+            } catch (erro) {
+                console.error('Erro:', erro);
+                document.getElementById('grid-produtos').innerHTML = '<p>Erro ao carregar produtos.</p>';
             }
         }
-
+        
         carregarProdutos();
     </script>
 </body>
